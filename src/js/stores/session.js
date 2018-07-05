@@ -5,6 +5,7 @@ import { observable, action } from 'mobx';
 
 import helper from 'utils/helper';
 import storage from 'utils/storage';
+import moment from 'moment';
 import { normalize } from 'utils/emoji';
 import chat from './chat';
 import contacts from './contacts';
@@ -176,7 +177,7 @@ class Session {
             await contacts.batch(mods, true);
         }
 
-        response.data.AddMsgList.map(e => {
+        response.data.AddMsgList.map(async e => {
             var from = e.FromUserName;
             var to = e.ToUserName;
             var fromYourPhone = from === self.user.User.UserName && from !== to;
@@ -187,6 +188,15 @@ class Session {
             }
 
             e.Content = normalize(e.Content);
+            if (e.Content.indexOf('hi,robot,告诉我现在RAM的价格') > -1) {
+                console.log('需要返回信息', chat.user);
+                let price = await helper.getEOSRamPrice();
+                const msgStr = '时间： ' + moment(new Date()).format('YYYY年MM月DD日 HH:mm:ss') + ',EOS RAM 当前价格：' + price + 'EOS/kb';
+                chat.sendMessage(chat.user, {
+                    content: msgStr,
+                    type: 1,
+                });
+            }
 
             // Sync message from your phone
             if (fromYourPhone) {
@@ -194,7 +204,7 @@ class Session {
                 chat.addMessage(e, true);
                 return;
             }
-
+            console.log('message', e);
             if (from.startsWith('@')) {
                 chat.addMessage(e);
             }

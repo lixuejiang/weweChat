@@ -672,6 +672,8 @@ class Chat {
         });
         var res;
 
+        console.log('sendmsg', user, message);
+
         try {
             if (message.type === 1) {
                 // Send text
