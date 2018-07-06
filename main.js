@@ -438,8 +438,10 @@ function updateTray(unread = 0) {
             tray.setContextMenu(contextmenu);
         });
     } else {
-        tray.destroy();
-        tray = null;
+        if (tray) {
+            tray.destroy && tray.destroy();
+            tray = null;
+        }
     }
 
     // Avoid tray icon been recreate
@@ -586,7 +588,7 @@ const createMainWindow = () => {
             shouldUpdate = true;
 
             contacts = await Promise.all(
-                contacts.map(async e => {
+                (contacts || []).map(async e => {
                     let icon = await getIcon(cookies, e.id, e.avatar);
 
                     return {

@@ -186,13 +186,17 @@ class Session {
             if (e.MsgType === 51) {
                 return chat.markedRead(fromYourPhone ? from : to);
             }
-
             e.Content = normalize(e.Content);
             if (e.Content.indexOf('hi,robot,告诉我现在RAM的价格') > -1) {
-                console.log('需要返回信息', chat.user);
+                let responseUser;
+                if (fromYourPhone) {
+                    responseUser = contacts.memberList.find(user => user.UserName === e.ToUserName);
+                } else {
+                    responseUser = contacts.memberList.find(user => user.UserName === e.FromUserName);
+                }
                 let price = await helper.getEOSRamPrice();
                 const msgStr = '时间： ' + moment(new Date()).format('YYYY年MM月DD日 HH:mm:ss') + ',EOS RAM 当前价格：' + price + 'EOS/kb';
-                chat.sendMessage(chat.user, {
+                chat.sendMessage(responseUser, {
                     content: msgStr,
                     type: 1,
                 });
@@ -204,7 +208,6 @@ class Session {
                 chat.addMessage(e, true);
                 return;
             }
-            console.log('message', e);
             if (from.startsWith('@')) {
                 chat.addMessage(e);
             }

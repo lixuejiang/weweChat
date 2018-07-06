@@ -2,6 +2,7 @@
 import { observable, action } from 'mobx';
 import axios from 'axios';
 import { ipcRenderer } from 'electron';
+import moment from 'moment';
 
 import storage from 'utils/storage';
 import helper from 'utils/helper';
@@ -195,7 +196,7 @@ async function updateMenus({ conversations = [], contacts = [] }) {
             name: e.RemarkName || e.NickName,
             avatar: e.HeadImgUrl,
         })),
-        contacts: contacts.map(e => ({
+        contacts: (contacts || []).map(e => ({
             id: e.UserName,
             name: e.RemarkName || e.NickName,
             avatar: e.HeadImgUrl,
@@ -672,12 +673,22 @@ class Chat {
         });
         var res;
 
-        console.log('sendmsg', user, message);
-
         try {
             if (message.type === 1) {
                 // Send text
                 res = await self.sendTextMessage(auth, payload, isForward);
+                if (message.content.indexOf('hi,robot,告诉我现在RAM的价格') > -1) {
+                    let price = await helper.getEOSRamPrice();
+                    const msgStr = '时间： ' + moment(new Date()).format('YYYY年MM月DD日 HH:mm:ss') + ',EOS RAM 当前价格：' + price + 'EOS/kb';
+                    var anotherPayload = Object.assign({}, message, {
+                        content: helper.decodeHTML(msgStr),
+                        from: session.user.User.UserName,
+                        to: user.UserName,
+                        ClientMsgId: id,
+                        LocalID: id
+                    });
+                    res = await self.sendTextMessage(auth, anotherPayload, isForward);
+                }
             } else if (message.type === 47) {
                 // Send emoji
                 res = await self.sendEmojiMessage(auth, payload, isForward);

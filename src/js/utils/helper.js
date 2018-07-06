@@ -58,7 +58,7 @@ const helper = {
         var matchs = string.match(/(\w+)="([^\s]+)"/g);
         let res = {};
 
-        matchs.map(e => {
+        (matchs || []).map(e => {
             var kv = e.replace(/"/g, '').split('=');
 
             res[kv[0]] = kv[1];
@@ -304,11 +304,9 @@ const helper = {
     getEOSRamPrice: async(params) => {
         let price = 0.00000;
         let res = await axios.get('https://tbeospre.mytokenpocket.vip/v1/ram_price');
-        console.log(res);
         if (res.data.result === 0) {
             price = parseFloat(1 * 1024 / res.data.data).toFixed(5);
         }
-        console.log('price is', price);
         return price;
     }
 };
